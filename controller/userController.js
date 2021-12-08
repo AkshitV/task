@@ -1,51 +1,26 @@
-
 var userService = require('../services/userService')
 
+module.exports.task = async (req, res) => {
 
-
-
-exports.login = function (req,res,callback) {
-
-
-    console.log("req.body",req.body);
-
+// const task = async (req, res) => {
     try {
-        
-        userService.login(req.body, function(createdAdmin){
-            console.log("callback in controller",createdAdmin)
-
-            if(createdAdmin!= null){
-
-                return res.status(200)
-                .json ({
-                    statusCode: 200,
-                    message: "Login Successfull"
-                })
-
-
-            }
-            else{
-                return res.status(201)
-                .json ({
-                    statusCode: 201,
-                    message: "Admin not found"
-                })
-
-            }
-
-
-
-        })
-
-
+        var data = await userService.get(req.body);
+        console.log("datatatatatatatatatksmdkvnksdnv", data)
+        console.log("sdasdasda",!data)
+        if (!data) {
+            console.log("idharrrr")
+            data = await userService.login(req.body);  
+        }
+        console.log("yahan aaaayayayaya nahiii kyaaaaaaaaaaaa", data);
+        return res.status(200).json({
+            status: 200,
+            data: data
+        });
     } catch (error) {
-        return Response.json(201)
-        .json ({
-            statusCode: 201,
-            message: "Some error occured, try again"
-        })
+        return res.status(201).json({
+            status: 201,
+            error: error
+        });
     }
     
-
-
 }

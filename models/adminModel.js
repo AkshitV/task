@@ -6,9 +6,8 @@ const mongoosePaginate = require ('mongoose-paginate')
 
 var adminSchema = new Schema ({
 
-    userName: {type: String, required: false},
-    password : {type: String, required: false},
-    accessToken: {type: String, required: false}
+    keyword: {type: String, required: false},
+    data : {type: String, required: false},
 },{
     collection: 'admin'
 })

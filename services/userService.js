@@ -1,61 +1,65 @@
 
-var adminModel = require ('../models/adminModel')
-var jwt = require('jsonwebtoken');
+var Model = require ('../models/adminModel')
+var fetch = require('node-fetch');
+const axios = require('axios');
 
-exports.login = async function (admin, callback){
-    console.log("admin, service ",admin)
-    adminModel.findOne({userName: admin.user_name, password: admin.password}, function(err,result){
 
-        if(err){
-            return res.status(201)
-            .json ({
-                statusCode: 201,
-                message: "Some error occured try again"
-            })
+module.exports.login = async (data) => {
+    try {
+        var res = null;
+        console.log("datatatatat0", data)
+        var endpoint = "https://cloud.feedly.com/v3/search/feeds/?query="+ data.site_keyword ;
+        console.log("endpoint :", endpoint);
+        try {
+            res = await axios.get(endpoint);
+        }
+        catch (e) {
+            console.error(e);
         }
 
-        else {
-            console.log("result in services", result)
-            if(result != null){
-
-                var token = jwt.sign({ foo: result._id }, 'shhhhh');
-
-
-                console.log("token",token)
-
-
-                    if(result != null){
-
-                    console.log("comes hereeeeeeeeeeeeeee")
-
-                    adminModel.updateOne({_id: result.id}, {accessToken: token},{new:true}, function(err,resultt){
-                        if(err){
-                            return res.status(201)
-                            .json ({
-                                statusCode: 201,
-                                message: "Some error occured try again"     
-                            })
-                        }
-                        else{
-
-                            console.log("result after updating",resultt)
-                            callback(resultt)
-                        }
-
-                    })
-
-
-                    }   
-                    else {
-                        console.log("here")
-                    }
+        var retries = 5;
+        while ((res.status!=200) && retries > 0) {
+            console.log("\nRetrying request...");
+            try {
+                res = await axios.get(endpoint);
             }
-            else{
-
-                callback(null)
+            catch (e) {
+                console.error(e);
             }
-
+            retries -= 1;
         }
-    })
+        if (res.status!=200) {
+            console.log("null")
+            return null;
+        }
 
-}
+        const obj = {
+            keyword:data.site_keyword,
+            data: JSON.stringify(res.data.results[0])
+        }        
+        var ress = await new Model(obj).save();
+        console.log("ress", ress)
+        return res.data.results[0];
+
+    } catch (error) {
+        console.error("error",error);
+    }
+};
+
+module.exports.get = async (data) => {
+    try{
+        const res = await Model.findOne({
+           keyword : data.site_keyword,
+        });
+
+        console.log("milaaaaaaaaaaaaaaa nahiiiiiii", res)
+
+        if(!res){
+            return null
+        }
+        return JSON.parse(res.data);
+    } catch (error) {
+        console.error("error",error);
+    }
+
+};    
